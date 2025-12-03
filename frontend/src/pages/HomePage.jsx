@@ -117,7 +117,7 @@ const HomePage = () => {
       <footer className="footer">
         <div className="container footer-inner">
           <span>© Handloom Heritage Weavers’ Cooperative Society</span>
-          <span>Made for educational demo – static listing only</span>
+          <span>Karunagappally Handloom Weaver's Induatrial co. op. Society LTd No. QH-02</span>
         </div>
       </footer>
     </>
