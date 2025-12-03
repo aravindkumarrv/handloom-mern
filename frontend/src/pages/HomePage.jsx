@@ -6,61 +6,46 @@ const HomePage = () => {
     <>
       <Navbar />
       <main>
-        <section className="container hero">
-          <div>
-            <div className="hero-badge">
+        <section class="hero hero-bg container">
+          <div >
+            <div class="hero-badge">
               <span>100% Handwoven</span>
               Direct from weavers
             </div>
+
             <h1>
-              Bringing <span className="highlight">traditional weaves</span>
-              <br />
+              Bringing <span class="highlight">traditional weaves</span><br />
               to modern homes.
             </h1>
+
             <p>
-              Discover ethically-made sarees, fabrics and home linens, handwoven
-              by our cooperative weavers. Transparent prices, authentic designs,
-              and fair wages.
+              Discover ethically-made sarees, fabrics and home linens, handwoven by our cooperative
+              weavers. Transparent prices, authentic designs, and fair wages.
             </p>
 
-            <div className="hero-actions">
-              <a href="/products" className="btn btn-primary">
-                Explore Collections →
-              </a>
-              <a href="#about" className="btn btn-outline">
-                About the Society
-              </a>
+            <div class="hero-actions">
+              <a href="/products" class="btn btn-primary">Explore Collections →</a>
+              <a href="#about" class="btn btn-outline">About the Society</a>
             </div>
 
-            <div className="hero-meta">
-              <div className="hero-meta-item">
-                <span className="value">50+</span>
-                <span>Member weavers</span>
-              </div>
-              <div className="hero-meta-item">
-                <span className="value">20 yrs</span>
-                <span>Of handloom legacy</span>
-              </div>
-              <div className="hero-meta-item">
-                <span className="value">100%</span>
-                <span>Natural fibers</span>
-              </div>
+            <div class="hero-meta">
+              <div class="hero-meta-item"><span class="value">50+</span><span>Member weavers</span></div>
+              <div class="hero-meta-item"><span class="value">20 yrs</span><span>Handloom legacy</span></div>
+              <div class="hero-meta-item"><span class="value">100%</span><span>Natural fibers</span></div>
             </div>
           </div>
 
-          <div className="hero-image-card">
-            <div className="hero-image-card-main">
-              <img
-                src="https://images.pexels.com/photos/4171632/pexels-photo-4171632.jpeg?auto=compress&dpr=2&w=800"
-                alt="Handloom weaving"
-              />
-              <div className="hero-tag">Live handloom in every thread</div>
-            </div>
-            <div className="hero-floating-card">
-              <h4>Weaver-owned marketplace</h4>
-              <span>All purchases support local artisan families.</span>
-            </div>
-          </div>
+          {/* <div class="hero-image-card">
+    <div class="hero-image-card-main">
+      <img src="https://images.pexels.com/photos/4171632/pexels-photo-4171632.jpeg?auto=compress&dpr=2&w=900" alt="Handloom weaving" />
+      <div class="hero-tag">Live handloom in every thread</div>
+    </div>
+
+    <div class="hero-floating-card">
+      <h4>Weaver-owned marketplace</h4>
+      <span>All purchases support artisan families.</span>
+    </div>
+  </div> */}
         </section>
 
         <section id="about" className="section">
