@@ -28,7 +28,7 @@ html, body {
 
 body {
   font-family: var(--font-main);
-  background: radial-gradient(circle at top left, #ffe5d0, #fff9f5 40%, #fdf5f2);
+ background: radial-gradient(circle at  left, #ffe5d0, #fff9f5 40%, #fdf5f2);
   color: var(--dark);
   line-height: 1.6;
 }
@@ -190,7 +190,7 @@ body {
   display: grid;
   align-items: center;
   padding: 4rem 1rem;
-  background: url("https://ix-marketing.imgix.net/liftkit-hero.png?auto=format,compress&w=1946")
+  background: url("https://rareandfair.com/cdn/shop/articles/Traditional_handloom_1200x1200.jpg?v=1623409470")
     center/cover no-repeat;
   border-radius: 2rem;
   overflow: hidden;
@@ -220,7 +220,7 @@ body {
 .hero-bg p,
 .hero-bg .hero-meta,
 .hero-bg .hero-floating-card span {
-  color: #f4e9e4;
+  color: #f7f5f4;
 }
 
 /* Optional: make buttons more visible */
@@ -245,7 +245,7 @@ body {
   gap: 2.5rem;
   align-items: center;
   padding: 3rem 1rem 2rem;
-  min-height: 85vh;
+  min-height: 80vh;
   margin-top: 1rem;
 }
 
@@ -274,14 +274,14 @@ body {
 }
 
 .hero h1 span.highlight {
-  background: linear-gradient(120deg, var(--primary), var(--accent));
+  background: linear-gradient(90deg, var(--primary), var(--accent));
   -webkit-background-clip: text;
   color: transparent;
 }
 
 .hero p {
   font-size: 0.98rem;
-  color: var(--muted);
+  color:var(--bg);
   margin-bottom: 1.4rem;
 }
 
@@ -311,7 +311,7 @@ body {
 
 /* hero image */
 .hero-image-card {
-  background: linear-gradient(145deg, #fffdf7, #ffe5d0);
+  background: linear-gradient(90deg,var(--primary), var(--accent));
   border-radius: 2rem;
   padding: 1rem;
   box-shadow: var(--shadow-soft);
