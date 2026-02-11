@@ -1,4 +1,3 @@
-// frontend/src/pages/AdminPage.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
@@ -64,6 +63,7 @@ const AdminPage = () => {
     setImageFile(file || null);
   };
 
+  // ================= ADD PRODUCT =================
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage({ type: "", text: "" });
@@ -100,17 +100,29 @@ const AdminPage = () => {
     }
   };
 
-  // ================= TOGGLE ORDER STATUS (FINAL WORKING VERSION) =================
+  // ================= TOGGLE STATUS =================
   const toggleOrderStatus = async (id) => {
     try {
       await api.patch(`/orders/${id}/status`);
-
-      // 🔥 Reload orders from backend
       await fetchOrders();
-
     } catch (err) {
-      console.error("Toggle error:", err);
       alert("Failed to update order.");
+    }
+  };
+
+  // ================= DELETE ORDER =================
+  const deleteOrder = async (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this order?"
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await api.delete(`/orders/${id}`);
+      await fetchOrders();
+    } catch (err) {
+      alert("Failed to delete order.");
     }
   };
 
@@ -125,13 +137,13 @@ const AdminPage = () => {
           <div
             className="form-card"
             style={{
-              marginBottom: "2rem",
-              maxWidth: "500px",
+              marginBottom: "3rem",
+              maxWidth: "600px",
               marginLeft: "auto",
               marginRight: "auto",
             }}
           >
-            <h2>Admin – Add New Product</h2>
+            <h2>🛒 Admin – Add New Product</h2>
 
             {message.text && (
               <div
@@ -148,7 +160,7 @@ const AdminPage = () => {
 
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Product name</label>
+                <label>Product Name</label>
                 <input
                   id="name"
                   value={form.name}
@@ -253,15 +265,30 @@ const AdminPage = () => {
                       </span>
                     </p>
 
-                    <button
-                      className="btn btn-primary"
-                      style={{ marginTop: "0.5rem" }}
-                      onClick={() => toggleOrderStatus(order._id)}
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "0.5rem",
+                        marginTop: "0.5rem",
+                      }}
                     >
-                      {order.status === "Pending"
-                        ? "Mark as Shipped"
-                        : "Mark as Pending"}
-                    </button>
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => toggleOrderStatus(order._id)}
+                      >
+                        {order.status === "Pending"
+                          ? "Mark as Shipped"
+                          : "Mark as Pending"}
+                      </button>
+
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => deleteOrder(order._id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+
                   </div>
                 ))}
               </div>

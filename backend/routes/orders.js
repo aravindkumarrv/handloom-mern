@@ -1,10 +1,8 @@
-// backend/routes/orders.js
 const express = require("express");
 const router = express.Router();
 
 const Order = require("../models/Order");
 const Product = require("../models/Product");
-
 
 // ======================================================
 // CREATE ORDER
@@ -45,6 +43,7 @@ router.post("/", async (req, res) => {
       status: "Pending",
     });
 
+    // Reduce stock
     product.stock -= Number(quantity);
     await product.save();
 
@@ -59,7 +58,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-
 // ======================================================
 // GET ALL ORDERS
 // ======================================================
@@ -70,12 +68,12 @@ router.get("/", async (req, res) => {
       .sort({ createdAt: -1 });
 
     res.json(orders);
+
   } catch (err) {
     console.error("Get orders error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
-
 
 // ======================================================
 // TOGGLE ORDER STATUS
@@ -100,6 +98,34 @@ router.patch("/:id/status", async (req, res) => {
 
   } catch (err) {
     console.error("Toggle status error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ======================================================
+// DELETE ORDER (RESTORES STOCK)
+// ======================================================
+router.delete("/:id", async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found." });
+    }
+
+    // Restore stock
+    const product = await Product.findById(order.product);
+    if (product) {
+      product.stock += order.quantity;
+      await product.save();
+    }
+
+    await order.deleteOne();
+
+    res.json({ message: "Order deleted successfully." });
+
+  } catch (err) {
+    console.error("Delete order error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
