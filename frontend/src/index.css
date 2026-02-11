@@ -28,7 +28,7 @@ html, body {
 
 body {
   font-family: var(--font-main);
-  background: radial-gradient(circle at top left, #ffe5d0, #fff9f5 40%, #fdf5f2);
+ background: radial-gradient(circle at  left, #ffe5d0, #fff9f5 40%, #fdf5f2);
   color: var(--dark);
   line-height: 1.6;
 }
@@ -180,12 +180,73 @@ body {
 }
 
 /* ====== HERO (HOME) ====== */
+/* ============================
+   HERO BACKGROUND VERSION
+   ============================ */
+
+.hero-bg {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  align-items: center;
+  padding: 4rem 1rem;
+  background: url("https://rareandfair.com/cdn/shop/articles/Traditional_handloom_1200x1200.jpg?v=1623409470")
+    center/cover no-repeat;
+  border-radius: 2rem;
+  overflow: hidden;
+}
+
+/* Dark overlay */
+.hero-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.55),
+    rgba(0, 0, 0, 0.25)
+  );
+  z-index: 0;
+}
+
+/* Ensure content appears above overlay */
+.hero-bg > * {
+  position: relative;
+  z-index: 2;
+  color: #fffdf7; /* text readable on dark background */
+}
+
+/* Adjust text colors for contrast */
+.hero-bg p,
+.hero-bg .hero-meta,
+.hero-bg .hero-floating-card span {
+  color: #f7f5f4;
+}
+
+/* Optional: make buttons more visible */
+.hero-bg .btn-outline {
+  border-color: #fff;
+  color: #fff;
+}
+
+.hero-bg .btn-outline:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Keep inner hero-image-card bright */
+.hero-image-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(4px);
+}
+
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   gap: 2.5rem;
   align-items: center;
-  padding: 3rem 0 2rem;
+  padding: 3rem 1rem 2rem;
+  min-height: 80vh;
+  margin-top: 1rem;
 }
 
 .hero-badge {
@@ -213,14 +274,14 @@ body {
 }
 
 .hero h1 span.highlight {
-  background: linear-gradient(120deg, var(--primary), var(--accent));
+  background: linear-gradient(90deg, var(--primary), var(--accent));
   -webkit-background-clip: text;
   color: transparent;
 }
 
 .hero p {
   font-size: 0.98rem;
-  color: var(--muted);
+  color:var(--bg);
   margin-bottom: 1.4rem;
 }
 
@@ -250,7 +311,7 @@ body {
 
 /* hero image */
 .hero-image-card {
-  background: linear-gradient(145deg, #fffdf7, #ffe5d0);
+  background: linear-gradient(90deg,var(--primary), var(--accent));
   border-radius: 2rem;
   padding: 1rem;
   box-shadow: var(--shadow-soft);
