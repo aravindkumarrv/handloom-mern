@@ -7,6 +7,11 @@ import RegisterPage from "./pages/RegisterPage.jsx";
 import AdminLoginPage from "./pages/AdminLoginPage.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
 
+// ✅ NEW PAGES
+import OrderPage from "./pages/OrderPage.jsx";
+import OrderSuccessPage from "./pages/OrderSuccessPage.jsx";
+import AdminOrdersPage from "./pages/AdminOrdersPage.jsx";
+
 function App() {
   return (
     <Routes>
@@ -16,6 +21,11 @@ function App() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/admin-login" element={<AdminLoginPage />} />
       <Route path="/admin" element={<AdminPage />} />
+
+      {/* ✅ NEW ROUTES */}
+      <Route path="/order/:id" element={<OrderPage />} />
+      <Route path="/order-success" element={<OrderSuccessPage />} />
+      <Route path="/admin-orders" element={<AdminOrdersPage />} />
     </Routes>
   );
 }

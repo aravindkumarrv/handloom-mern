@@ -5,6 +5,8 @@ import Navbar from "../components/Navbar.jsx";
 import api from "../api.js";
 
 const AdminPage = () => {
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     name: "",
     category: "",
@@ -12,44 +14,46 @@ const AdminPage = () => {
     description: "",
     stock: "",
   });
+
   const [imageFile, setImageFile] = useState(null);
   const [message, setMessage] = useState({ type: "", text: "" });
 
-  const [products, setProducts] = useState([]);
-  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
 
-  const navigate = useNavigate();
-
-  // ✅ Only admin can access this page
+  // ================= ADMIN PROTECTION =================
   useEffect(() => {
     const raw = localStorage.getItem("handloomUser");
+
     if (!raw) {
       navigate("/admin-login");
       return;
     }
+
     const user = JSON.parse(raw);
+
     if (user.role !== "admin") {
       navigate("/admin-login");
+      return;
     }
+
+    fetchOrders();
   }, [navigate]);
 
-  // ✅ Load all products for admin list
-  const loadProducts = async () => {
+  // ================= LOAD ORDERS =================
+  const fetchOrders = async () => {
     try {
-      setLoadingProducts(true);
-      const res = await api.get("/products/admin"); // backend route
-      setProducts(res.data);
+      setLoadingOrders(true);
+      const res = await api.get("/orders");
+      setOrders(res.data);
     } catch (err) {
-      console.error("Error loading admin products:", err);
+      console.error("Error loading orders:", err);
     } finally {
-      setLoadingProducts(false);
+      setLoadingOrders(false);
     }
   };
 
-  useEffect(() => {
-    loadProducts();
-  }, []);
-
+  // ================= FORM HANDLERS =================
   const handleChange = (e) => {
     const { id, value } = e.target;
     setForm((prev) => ({ ...prev, [id]: value }));
@@ -64,39 +68,20 @@ const AdminPage = () => {
     e.preventDefault();
     setMessage({ type: "", text: "" });
 
-    if (!form.name || !form.category || !form.price || !form.description) {
-      setMessage({ type: "error", text: "Please fill in all required fields." });
-      return;
-    }
-
-    const priceNum = Number(form.price);
-    if (!priceNum || priceNum <= 0) {
-      setMessage({
-        type: "error",
-        text: "Please enter a valid price greater than zero.",
-      });
-      return;
-    }
-
     try {
       const fd = new FormData();
       fd.append("name", form.name.trim());
       fd.append("category", form.category);
-      fd.append("price", priceNum.toString());
+      fd.append("price", form.price);
       fd.append("description", form.description.trim());
-      fd.append("stock", form.stock === "" ? "0" : form.stock.toString());
-      if (imageFile) {
-        fd.append("image", imageFile);
-      }
+      fd.append("stock", form.stock || "0");
+      if (imageFile) fd.append("image", imageFile);
 
       await api.post("/products", fd, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      setMessage({
-        type: "success",
-        text: "Product added successfully!",
-      });
+      setMessage({ type: "success", text: "Product added successfully!" });
 
       setForm({
         name: "",
@@ -105,49 +90,27 @@ const AdminPage = () => {
         description: "",
         stock: "",
       });
+
       setImageFile(null);
-
-      // reload list so new product appears
-      loadProducts();
     } catch (err) {
-      console.error("Error adding product:", err);
-
-      const backendMsg =
-        err.response?.data?.message ||
-        err.message ||
-        "Something went wrong while saving the product.";
-
       setMessage({
         type: "error",
-        text: backendMsg,
+        text: err.response?.data?.message || "Error saving product.",
       });
     }
   };
 
-  // 🗑 DELETE product
-  const handleDelete = async (id) => {
-    const ok = window.confirm("Delete this product permanently?");
-    if (!ok) return;
-
+  // ================= TOGGLE ORDER STATUS (FINAL WORKING VERSION) =================
+  const toggleOrderStatus = async (id) => {
     try {
-      await api.delete(`/products/${id}`);
-      loadProducts();
-    } catch (err) {
-      console.error("Delete error:", err);
-      alert("Failed to delete product.");
-    }
-  };
+      await api.patch(`/orders/${id}/status`);
 
-  // ✅ Toggle availability (Available / Unavailable)
-  const handleToggleAvailability = async (product) => {
-    try {
-      await api.patch(`/products/${product._id}/availability`, {
-        available: !product.available,
-      });
-      loadProducts();
+      // 🔥 Reload orders from backend
+      await fetchOrders();
+
     } catch (err) {
-      console.error("Availability update error:", err);
-      alert("Failed to update availability.");
+      console.error("Toggle error:", err);
+      alert("Failed to update order.");
     }
   };
 
@@ -156,262 +119,157 @@ const AdminPage = () => {
       <Navbar />
 
       <main className="form-page">
-        <div className="form-card">
-          <h2>Admin – Add New Product</h2>
-          <p>
-            This panel is meant for society staff only. Products added here will
-            appear in the main listing page.
-          </p>
+        <div className="container">
 
-          {message.text && (
-            <div
-              className={
-                "alert " +
-                (message.type === "success" ? "alert-success" : "alert-error")
-              }
-              style={{ display: "block" }}
-            >
-              {message.text}
-            </div>
-          )}
+          {/* ================= ADD PRODUCT ================= */}
+          <div
+            className="form-card"
+            style={{
+              marginBottom: "2rem",
+              maxWidth: "500px",
+              marginLeft: "auto",
+              marginRight: "auto",
+            }}
+          >
+            <h2>Admin – Add New Product</h2>
 
-          {/* ===== ADD PRODUCT FORM ===== */}
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="name">Product name</label>
-              <input
-                type="text"
-                id="name"
-                required
-                placeholder="Eg. Pure Cotton Temple Border Saree"
-                value={form.name}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="category">Category</label>
-              <select
-                id="category"
-                required
-                value={form.category}
-                onChange={handleChange}
+            {message.text && (
+              <div
+                className={
+                  "alert " +
+                  (message.type === "success"
+                    ? "alert-success"
+                    : "alert-error")
+                }
               >
-                <option value="">Select category</option>
-                <option value="Saree">Saree</option>
-                <option value="Bedsheet">Bedsheet</option>
-                <option value="Lungi">Lungi</option>
-                <option value="Uniform">Uniform</option>
-                <option value="Carpet">Carpet</option>
-                <option value="Curtains">Curtains</option>
-              </select>
-            </div>
+                {message.text}
+              </div>
+            )}
 
-            <div className="form-group">
-              <label htmlFor="price">Price (₹)</label>
-              <input
-                type="number"
-                id="price"
-                min="1"
-                step="1"
-                required
-                placeholder="Eg. 2490"
-                value={form.price}
-                onChange={handleChange}
-              />
-            </div>
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label>Product name</label>
+                <input
+                  id="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="stock">Stock (pcs)</label>
-              <input
-                type="number"
-                id="stock"
-                min="0"
-                step="1"
-                required
-                placeholder="Eg. 10"
-                value={form.stock}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="image">Product image</label>
-              <input
-                type="file"
-                id="image"
-                accept="image/*"
-                onChange={handleFileChange}
-              />
-              <p className="form-note">
-                Choose an image from your system. It will be uploaded to the
-                server and used in the product listing.
-              </p>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="description">Short description</label>
-              <textarea
-                id="description"
-                required
-                placeholder="Eg. Handwoven cotton saree / bedsheet / lungi with traditional patterns."
-                value={form.description}
-                onChange={handleChange}
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="btn btn-primary"
-              style={{
-                marginTop: "1rem",
-                width: "100%",
-                justifyContent: "center",
-              }}
-            >
-              Save Product
-            </button>
-
-            <p className="form-note">
-              After saving, open <strong>Products</strong> page to see the
-              customer view. Images are stored on the backend using Multer.
-            </p>
-          </form>
-
-          {/* ===== PRODUCT LIST + DELETE ===== */}
-          <hr style={{ margin: "1.4rem 0", borderColor: "#eee" }} />
-
-          <h3 style={{ marginBottom: "0.4rem", fontSize: "1.05rem" }}>
-            Manage Existing Products
-          </h3>
-          <p className="form-note" style={{ marginBottom: "0.6rem" }}>
-            Use <b>Delete</b> to remove a product permanently or toggle{" "}
-            <b>Available / Unavailable</b>.
-          </p>
-
-          {loadingProducts ? (
-            <p style={{ fontSize: "0.9rem", color: "#777" }}>Loading...</p>
-          ) : products.length === 0 ? (
-            <p style={{ fontSize: "0.9rem", color: "#777" }}>
-              No products found. Add a new product above.
-            </p>
-          ) : (
-            <div
-              style={{
-                maxHeight: "220px",
-                overflowY: "auto",
-                borderRadius: "0.8rem",
-                border: "1px solid rgba(0,0,0,0.06)",
-                padding: "0.4rem 0.5rem",
-                background: "#fffdf8",
-              }}
-            >
-              {products.map((p) => (
-                <div
-                  key={p._id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.6rem",
-                    padding: "0.35rem 0.25rem",
-                    borderBottom: "1px solid rgba(0,0,0,0.04)",
-                  }}
+              <div className="form-group">
+                <label>Category</label>
+                <select
+                  id="category"
+                  value={form.category}
+                  onChange={handleChange}
+                  required
                 >
-                  <img
-                    src={p.image}
-                    alt={p.name}
-                    style={{
-                      width: "60px",
-                      height: "40px",
-                      objectFit: "cover",
-                      borderRadius: "0.5rem",
-                    }}
-                  />
-                  <div style={{ flex: 1 }}>
-                    <div
-                      style={{
-                        fontSize: "0.87rem",
-                        fontWeight: 600,
-                        marginBottom: "0.1rem",
-                      }}
-                    >
-                      {p.name}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "0.75rem",
-                        color: "#777",
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: "0.5rem",
-                        alignItems: "center",
-                      }}
-                    >
-                      <span>{p.category}</span>
-                      <span>₹{p.price}</span>
-                      <span>Stock: {p.stock ?? 0}</span>
+                  <option value="">Select</option>
+                  <option value="Saree">Saree</option>
+                  <option value="Bedsheet">Bedsheet</option>
+                  <option value="Lungi">Lungi</option>
+                  <option value="Uniform">Uniform</option>
+                  <option value="Carpet">Carpet</option>
+                  <option value="Curtains">Curtains</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Price</label>
+                <input
+                  type="number"
+                  id="price"
+                  value={form.price}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Stock</label>
+                <input
+                  type="number"
+                  id="stock"
+                  value={form.stock}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Image</label>
+                <input type="file" onChange={handleFileChange} />
+              </div>
+
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  id="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <button className="btn btn-primary" style={{ width: "100%" }}>
+                Save Product
+              </button>
+            </form>
+          </div>
+
+          {/* ================= CUSTOMER ORDERS ================= */}
+          <div className="section">
+            <h2>📦 Customer Orders</h2>
+
+            {loadingOrders ? (
+              <p>Loading orders...</p>
+            ) : orders.length === 0 ? (
+              <p>No orders placed yet.</p>
+            ) : (
+              <div className="feature-grid">
+                {orders.map((order) => (
+                  <div key={order._id} className="feature-card">
+                    <h3>{order.product?.name}</h3>
+
+                    <p><b>Customer:</b> {order.customerName}</p>
+                    <p><b>Phone:</b> {order.phone}</p>
+                    <p><b>Address:</b> {order.address}</p>
+                    <p><b>Quantity:</b> {order.quantity}</p>
+                    <p><b>Total:</b> ₹{order.totalPrice}</p>
+
+                    <p>
+                      <b>Status:</b>{" "}
                       <span
                         style={{
-                          padding: "0.1rem 0.45rem",
-                          borderRadius: "999px",
-                          fontSize: "0.7rem",
-                          background: p.available
-                            ? "rgba(0,160,80,0.12)"
-                            : "rgba(160,0,0,0.07)",
-                          color: p.available ? "#0a7b3b" : "#a12b2b",
+                          color:
+                            order.status === "Shipped"
+                              ? "green"
+                              : "#b83232",
+                          fontWeight: 600,
                         }}
                       >
-                        {p.available ? "Available" : "Unavailable"}
+                        {order.status}
                       </span>
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "0.25rem",
-                    }}
-                  >
-                    <button
-                      type="button"
-                      className="btn btn-outline"
-                      style={{
-                        fontSize: "0.7rem",
-                        padding: "0.2rem 0.6rem",
-                      }}
-                      onClick={() => handleToggleAvailability(p)}
-                    >
-                      {p.available ? "Make Unavailable" : "Make Available"}
-                    </button>
+                    </p>
 
                     <button
-                      type="button"
                       className="btn btn-primary"
-                      style={{
-                        fontSize: "0.7rem",
-                        padding: "0.2rem 0.6rem",
-                        background:
-                          "linear-gradient(135deg, #b83232, #7c1f1f)",
-                      }}
-                      onClick={() => handleDelete(p._id)}
+                      style={{ marginTop: "0.5rem" }}
+                      onClick={() => toggleOrderStatus(order._id)}
                     >
-                      Delete
+                      {order.status === "Pending"
+                        ? "Mark as Shipped"
+                        : "Mark as Pending"}
                     </button>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
+
         </div>
       </main>
-
-      <footer className="footer">
-        <div className="container footer-inner">
-          <span>Admin panel lets you manage visibility, stock and inventory.</span>
-          <span>Extend with edit & bulk actions later.</span>
-        </div>
-      </footer>
     </>
   );
 };
